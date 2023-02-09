@@ -3,7 +3,7 @@ const express = require("express");
 const sequelize = require("sequelize");
 const dotenv = require("dotenv").config();
 const cookieParser = require("cookie-parser");
-const db = require("./Models");
+const db = require("./models");
 const userRoutes = require("./Routes/userRoutes");
 const globalErrorHandler = require("./middlewares/globalErrorHandler");
 
