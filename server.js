@@ -4,7 +4,7 @@ const sequelize = require("sequelize");
 const dotenv = require("dotenv").config();
 const cookieParser = require("cookie-parser");
 const db = require("./models");
-const userRoutes = require("./Routes/userRoutes");
+const userRoutes = require("./routes/userRoutes");
 const globalErrorHandler = require("./middlewares/globalErrorHandler");
 
 //setting up your port
