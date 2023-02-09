@@ -1,6 +1,6 @@
 //importing modules
 const bcrypt = require("bcrypt");
-const db = require("../Models");
+const db = require("../models");
 const jwt = require("jsonwebtoken");
 const AppError = require("../utils/appError");
 
