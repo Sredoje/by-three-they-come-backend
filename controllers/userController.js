@@ -22,7 +22,7 @@ const signup = async (req, res, next) => {
     //generate token with the user's id and the secretKey in the env file
     // set cookie with the token generated
     if (user) {
-      let token = jwt.sign({ id: user.id }, process.env.secretKey, {
+      let token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, {
         expiresIn: 1 * 24 * 60 * 60 * 1000,
       });
 

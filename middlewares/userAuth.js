@@ -1,6 +1,7 @@
 //importing modules
 const express = require("express");
 const db = require("../Models");
+const AppError = require("../utils/appError");
 //Assigning db.users to User variable
 const User = db.users;
 
