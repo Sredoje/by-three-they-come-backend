@@ -1,11 +1,10 @@
 //importing modules
 const { Sequelize, DataTypes } = require("sequelize");
-console.log("process.env.DB_HOST", process.env.DB_HOST);
+console.log("process.env.DB_HOST", process.env.DB_HOSTNAME);
 let options = {
-  host: process.env.DB_HOST,
+  host: process.env.DB_HOSTNAME,
   port: process.env.DB_PORT,
   dialect: "postgres",
-  logging: console.log,
 };
 
 // Local db
