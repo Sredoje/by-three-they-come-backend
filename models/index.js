@@ -1,6 +1,6 @@
 //importing modules
 const { Sequelize, DataTypes } = require("sequelize");
-console.log("process.env.DB_HOST");
+console.log("process.env.DB_HOST", process.env.DB_HOST);
 let options = {
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
