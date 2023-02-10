@@ -30,9 +30,11 @@ const signup = async (req, res, next) => {
       console.log("user", JSON.stringify(user, null, 2));
       console.log(token);
       //send users details
+      // res.setHeader("Set-Cookie", "isLoggedin=true; Max-Age=60");
       res.status(200).json({
         status: "success",
         user: user,
+        token: token,
       });
     } else {
       return next(new AppError("Incorrect details", 400));
