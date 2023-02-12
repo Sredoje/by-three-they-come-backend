@@ -10,16 +10,6 @@ const User = db.users;
 const saveUser = async (req, res, next) => {
   //search the database to see if user exist
   try {
-    const username = await User.findOne({
-      where: {
-        userName: req.body.userName,
-      },
-    });
-    //if username exist in the database respond with a status of 409
-    if (username) {
-      return next(new AppError("Username already taken", 409));
-    }
-
     //checking if email already exist
     const emailcheck = await User.findOne({
       where: {
@@ -29,7 +19,7 @@ const saveUser = async (req, res, next) => {
 
     //if email exist in the database respond with a status of 409
     if (emailcheck) {
-      return next(new AppError("Authentication failed", 409));
+      return next(new AppError("Email already taken", 409));
     }
 
     next();

@@ -43,7 +43,10 @@ const signup = async (req, res, next) => {
     console.log(error);
   }
 };
-
+// //
+// const logout = async (req, res, next) => {
+//   console.log(res.cookie);
+// };
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -60,7 +63,7 @@ const login = async (req, res, next) => {
       const isSame = await bcrypt.compare(password, user.password);
 
       if (isSame) {
-        let token = jwt.sign({ id: user.id }, process.env.secretKey, {
+        let token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, {
           expiresIn: 1 * 24 * 60 * 60 * 1000,
         });
 
@@ -68,7 +71,11 @@ const login = async (req, res, next) => {
         res.cookie("jwt", token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
         console.log("user", JSON.stringify(user, null, 2));
         console.log(token);
-        return res.status(201).send(user);
+        res.status(200).json({
+          status: "success",
+          user: user,
+          token: token,
+        });
       } else {
         return next(new AppError("Authentication failed", 401));
       }

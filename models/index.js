@@ -7,12 +7,6 @@ let options = {
   dialect: "postgres",
 };
 
-// Local db
-// const sequelize = new Sequelize(
-//   `postgres://postgres:admin@localhost:5432/by-three-they-come`,
-//   {dialect: "postgres"}
-// );]
-
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USERNAME,
@@ -35,7 +29,8 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 //connecting to model
-db.users = require("./userModel.js")(sequelize, DataTypes);
-
+db.users = require("./user.js")(sequelize, DataTypes);
+db.posts = require("./post.js")(sequelize);
+// db.sequelize.models.associate();
 //exporting the module
 module.exports = db;
