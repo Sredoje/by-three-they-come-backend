@@ -1,12 +1,14 @@
 //importing modules
-const express = require("express");
-const sequelize = require("sequelize");
-const dotenv = require("dotenv").config();
-const cookieParser = require("cookie-parser");
-const cors = require("cors");
-const db = require("./models");
-const userRoutes = require("./routes/userRoutes");
-const globalErrorHandler = require("./middlewares/globalErrorHandler");
+const express = require('express');
+const sequelize = require('sequelize');
+const dotenv = require('dotenv').config();
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+const db = require('./models');
+const userRoutes = require('./routes/userRoutes');
+const postRoutes = require('./routes/postRoutes');
+const globalErrorHandler = require('./middlewares/globalErrorHandler');
+// const fileupload = require('express-fileupload');
 
 //setting up your port
 const PORT = process.env.PORT || 8080;
@@ -18,14 +20,17 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+// app.use(fileupload());
+
+// ...
 
 //synchronizing the database and forcing it to false so we dont lose data
 db.sequelize.sync({ force: true }).then(() => {
-  console.log("db has been re sync");
+  console.log('db has been re sync');
 });
-
 //routes for the user API
-app.use("/api/users", userRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
 
 app.use(globalErrorHandler);
 
