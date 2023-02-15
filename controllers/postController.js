@@ -19,10 +19,17 @@ const User = db.users;
 const Post = db.posts;
 const PostItem = db.postItems;
 
+// This function will return all pots on main page, it should have user_id as params, and it should return locked + unlocked photos
+// If user has unlocked a photo it should not be blurred
+const getAllPosts = () => {};
+const getPost = () => {};
 const savePostItems = async (userId, uploadedData) => {
   try {
     const result = await sequalize.transaction(async (t) => {
-      let post = await Post.build({ userId: userId }, { transaction: t });
+      let post = await Post.build(
+        { userId: userId, status: 'draft' },
+        { transaction: t }
+      );
       await post.save({ transaction: t }); // save the post instance to get its id
 
       const postItems = uploadedData.map(async (item) => {
@@ -53,19 +60,13 @@ const savePostItems = async (userId, uploadedData) => {
 };
 const createNewPost = async (req, res, next) => {
   try {
-    // Handle errors
-    // Create post in db and populate urls of image
-    // const imagePath = req.files[0].path;
-    // console.log(req.files);
     if (!req.files) {
-      res.send('Images are not present');
-      return;
+      return next(new AppError('Images are not present', 400));
     }
 
     let files = req.files;
     if (files.length < 3) {
-      res.send('3 images must be uploaded');
-      return;
+      return next(new AppError('At least 3 images must be uploaded', 400));
     }
     let s3 = new AWS.S3();
 
@@ -100,7 +101,7 @@ const createNewPost = async (req, res, next) => {
       });
     });
   } catch (error) {
-    console.log(error);
+    return next(new AppError('Error uploading images', 400));
   }
 };
 

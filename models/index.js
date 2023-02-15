@@ -30,7 +30,7 @@ db.sequelize = sequelize;
 
 //connecting to model
 db.users = require('./user.js')(sequelize, DataTypes);
-db.posts = require('./post.js')(sequelize);
+db.posts = require('./post.js')(sequelize, DataTypes);
 db.postItems = require('./postItem.js')(sequelize, DataTypes);
 // db.sequelize.models.associate();
 //exporting the module

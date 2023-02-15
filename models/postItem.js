@@ -1,9 +1,4 @@
 module.exports = (sequelize, DataTypes) => {
-  // postId: post.id,
-  // originalName: item.originalName,
-  // mimeType: item.mimeType,
-  // key: item.key,
-  // location: item.Location,
   let PostItem = sequelize.define(
     'postItem',
     {
