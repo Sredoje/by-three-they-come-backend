@@ -15,9 +15,9 @@ AWS.config.update({
   region: process.env.AWS_REGION,
 });
 // Assigning users to the variable User
-const User = db.users;
-const Post = db.posts;
-const PostItem = db.postItems;
+const User = db.User;
+const Post = db.Post;
+const PostItem = db.PostItem;
 
 // This function will return all pots on main page, it should have user_id as params, and it should return locked + unlocked photos
 // If user has unlocked a photo it should not be blurred
@@ -105,6 +105,35 @@ const createNewPost = async (req, res, next) => {
   }
 };
 
+const fetchUserPosts = async (req, res, next) => {
+  console.log('USAO U FETCH USER POSTS');
+  try {
+    console.log(req.params);
+    const { userId } = req.params;
+    if (userId == req.user.id) {
+      // Fethicng own posts
+    } else {
+      // Fethicng someone elses posts, add locked ones
+    }
+
+    //find a user by their email
+    const posts = await Post.findAll({
+      where: {
+        userId: userId,
+      },
+      include: { model: PostItem, as: 'PostItems' },
+    });
+    res.status(200).send({
+      status: 'success',
+      posts: posts,
+    });
+  } catch (error) {
+    console.log(error);
+    return next(new AppError('Error fetching user posts', 400));
+  }
+};
+
 module.exports = {
   createNewPost,
+  fetchUserPosts,
 };

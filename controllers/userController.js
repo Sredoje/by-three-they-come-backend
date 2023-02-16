@@ -1,11 +1,11 @@
 //importing modules
-const bcrypt = require("bcrypt");
-const db = require("../models");
-const jwt = require("jsonwebtoken");
-const AppError = require("../utils/appError");
+const bcrypt = require('bcrypt');
+const db = require('../models');
+const jwt = require('jsonwebtoken');
+const AppError = require('../utils/appError');
 
 // Assigning users to the variable User
-const User = db.users;
+const User = db.User;
 
 const signup = async (req, res, next) => {
   try {
@@ -26,18 +26,18 @@ const signup = async (req, res, next) => {
         expiresIn: 1 * 24 * 60 * 60 * 1000,
       });
 
-      res.cookie("jwt", token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
-      console.log("user", JSON.stringify(user, null, 2));
+      res.cookie('jwt', token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
+      console.log('user', JSON.stringify(user, null, 2));
       console.log(token);
       //send users details
       // res.setHeader("Set-Cookie", "isLoggedin=true; Max-Age=60");
       res.status(200).json({
-        status: "success",
+        status: 'success',
         user: user,
         token: token,
       });
     } else {
-      return next(new AppError("Incorrect details", 400));
+      return next(new AppError('Incorrect details', 400));
     }
   } catch (error) {
     console.log(error);
@@ -68,19 +68,19 @@ const login = async (req, res, next) => {
         });
 
         // GENERATE JWT COOKIE
-        res.cookie("jwt", token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
-        console.log("user", JSON.stringify(user, null, 2));
+        res.cookie('jwt', token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
+        console.log('user', JSON.stringify(user, null, 2));
         console.log(token);
         res.status(200).json({
-          status: "success",
+          status: 'success',
           user: user,
           token: token,
         });
       } else {
-        return next(new AppError("Authentication failed", 401));
+        return next(new AppError('Authentication failed', 401));
       }
     } else {
-      return next(new AppError("Authentication failed", 401));
+      return next(new AppError('Authentication failed', 401));
     }
   } catch (error) {
     console.log(error);

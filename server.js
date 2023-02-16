@@ -25,7 +25,7 @@ app.use(cookieParser());
 // ...
 
 //synchronizing the database and forcing it to false so we dont lose data
-db.sequelize.sync({ force: true }).then(() => {
+db.sequelize.sync().then(() => {
   console.log('db has been re sync');
 });
 //routes for the user API

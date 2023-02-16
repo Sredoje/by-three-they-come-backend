@@ -1,6 +1,13 @@
-//importing modules
-const { Sequelize, DataTypes } = require('sequelize');
-console.log('process.env.DB_HOST', process.env.DB_HOSTNAME);
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const Sequelize = require('sequelize');
+const process = require('process');
+const basename = path.basename(__filename);
+const env = process.env.NODE_ENV || 'development';
+const db = {};
+
 let options = {
   host: process.env.DB_HOSTNAME,
   port: process.env.DB_PORT,
@@ -14,24 +21,30 @@ const sequelize = new Sequelize(
   options
 );
 
-//checking if connection is done
-sequelize
-  .authenticate()
-  .then(() => {
-    console.log(`Database connected to discover`);
+fs.readdirSync(__dirname)
+  .filter((file) => {
+    return (
+      file.indexOf('.') !== 0 &&
+      file !== basename &&
+      file.slice(-3) === '.js' &&
+      file.indexOf('.test.js') === -1
+    );
   })
-  .catch((err) => {
-    console.log(err);
+  .forEach((file) => {
+    const model = require(path.join(__dirname, file))(
+      sequelize,
+      Sequelize.DataTypes
+    );
+    db[model.name] = model;
   });
 
-const db = {};
-db.Sequelize = Sequelize;
-db.sequelize = sequelize;
+Object.keys(db).forEach((modelName) => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
+});
 
-//connecting to model
-db.users = require('./user.js')(sequelize, DataTypes);
-db.posts = require('./post.js')(sequelize, DataTypes);
-db.postItems = require('./postItem.js')(sequelize, DataTypes);
-// db.sequelize.models.associate();
-//exporting the module
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
+
 module.exports = db;

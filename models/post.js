@@ -1,23 +1,28 @@
+'use strict';
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  let Post = sequelize.define(
-    'post',
+  class Post extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
+    static associate(models) {
+      Post.hasMany(models.PostItem, { as: 'PostItems', foreignKey: 'postId' });
+    }
+  }
+  Post.init(
     {
       status: {
         type: DataTypes.ENUM,
         values: ['draft', 'published', 'deleted'],
-        allowNull: false,
       },
+      userId: DataTypes.INTEGER,
     },
-    { timestamps: true }
+    {
+      sequelize,
+      modelName: 'Post',
+    }
   );
-  Post.belongsTo(sequelize.models.user, { as: 'user', foreignKey: 'userId' });
-
-  Post.associate = (models) => {
-    Post.hasMany(sequalize.models.postItem, {
-      as: 'postItems',
-      foreignKey: 'postId',
-    });
-  };
-
   return Post;
 };

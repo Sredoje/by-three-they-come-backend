@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../models');
 
 // Assigning users to the variable User
-const User = db.users;
+const User = db.User;
 //  Protecting Routes
 module.exports = async (req, res, next) => {
   let token;
