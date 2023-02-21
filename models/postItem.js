@@ -1,7 +1,5 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class PostItem extends Model {
     /**
@@ -13,15 +11,22 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  PostItem.init({
-    originalName: DataTypes.STRING,
-    mimeType: DataTypes.STRING,
-    key: DataTypes.STRING,
-    location: DataTypes.STRING,
-    postId: DataTypes.INTEGER
-  }, {
-    sequelize,
-    modelName: 'PostItem',
-  });
+  PostItem.init(
+    {
+      originalName: DataTypes.STRING,
+      mimeType: DataTypes.STRING,
+      key: DataTypes.STRING,
+      location: DataTypes.STRING,
+      postId: DataTypes.INTEGER,
+      status: {
+        type: DataTypes.ENUM,
+        values: ['unlocked', 'locked', 'deleted'],
+      },
+    },
+    {
+      sequelize,
+      modelName: 'PostItem',
+    }
+  );
   return PostItem;
 };

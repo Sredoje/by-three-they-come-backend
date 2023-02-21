@@ -39,6 +39,7 @@ const savePostItems = async (userId, uploadedData) => {
           mimeType: item.mimeType,
           key: item.key,
           location: item.Location,
+          status: 'unlocked',
         };
         const postItem = await PostItem.build(builtItem, { transaction: t });
         return postItem.save({ transaction: t }); // save the post item instance
@@ -122,6 +123,7 @@ const fetchUserPosts = async (req, res, next) => {
         userId: userId,
       },
       include: { model: PostItem, as: 'PostItems' },
+      order: [['id', 'DESC']],
     });
     res.status(200).send({
       status: 'success',

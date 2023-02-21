@@ -8,7 +8,7 @@ const Utils = {
       case 'image/png':
         return 'png';
       default:
-        return null; // Or throw an error, depending on your use case
+        return null;
     }
   },
 };
