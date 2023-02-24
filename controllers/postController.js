@@ -23,6 +23,30 @@ const PostItem = db.PostItem;
 // If user has unlocked a photo it should not be blurred
 const getAllPosts = () => {};
 const getPost = () => {};
+const deletePost = async (req, res, next) => {
+  try {
+    console.log('Request params are: ' + req.params);
+    const { postId } = req.params;
+
+    //find a user by their email
+    const post = await Post.findOne({
+      where: { id: postId, userId: req.user.id },
+    });
+    if (post) {
+      await post.destroy();
+      res.status(200).send({
+        status: 'success',
+        post: post,
+      });
+    } else {
+      return next(new AppError('Post already deleted', 400));
+    }
+  } catch (error) {
+    console.log(error);
+    return next(new AppError('Error fetching user posts', 400));
+  }
+};
+
 const savePostItems = async (userId, uploadedData) => {
   try {
     const result = await sequalize.transaction(async (t) => {
@@ -92,7 +116,6 @@ const createNewPost = async (req, res, next) => {
         uploadedData.push(data);
         if (uploadedData.length == files.length) {
           await savePostItems(req.user.id, uploadedData);
-
           res.send({
             response_code: 200,
             response_message: 'Success',
@@ -125,6 +148,7 @@ const fetchUserPosts = async (req, res, next) => {
       include: { model: PostItem, as: 'PostItems' },
       order: [['id', 'DESC']],
     });
+    console.log(posts.length);
     res.status(200).send({
       status: 'success',
       posts: posts,
@@ -138,4 +162,5 @@ const fetchUserPosts = async (req, res, next) => {
 module.exports = {
   createNewPost,
   fetchUserPosts,
+  deletePost,
 };

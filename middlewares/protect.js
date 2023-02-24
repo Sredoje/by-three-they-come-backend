@@ -17,7 +17,7 @@ module.exports = async (req, res, next) => {
   if (!token) {
     return next(new AppError('you are not logged in ', 401));
   }
-  console.log(`process.env.JWT_SECRET`, process.env.SECRET_KEY);
+
   // 2- validate the token
   let decode = null;
   try {

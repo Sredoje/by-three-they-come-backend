@@ -1,7 +1,7 @@
 //importing modules
 const express = require('express');
 const postController = require('../controllers/postController');
-const { createNewPost, fetchUserPosts } = postController;
+const { createNewPost, fetchUserPosts, deletePost } = postController;
 const protect = require('../middlewares/protect');
 
 const router = express.Router();
@@ -13,7 +13,9 @@ var storage = multer.memoryStorage({
 });
 var multipleUpload = multer({ storage: storage }).any();
 //Post for uploading pictures
-router.post('/create-new-post', multipleUpload, protect, createNewPost);
+
+router.route('/:postId').delete(protect, deletePost);
+router.post('/', multipleUpload, protect, createNewPost);
 router.get('/user-posts/:userId', protect, fetchUserPosts);
 
 module.exports = router;
