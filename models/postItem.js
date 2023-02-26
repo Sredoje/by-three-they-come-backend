@@ -10,6 +10,9 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+    static LOCKED = 'locked';
+    static UNLOCKED = 'unlocked';
+    static DELETED = 'deleted';
   }
   PostItem.init(
     {
@@ -20,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       postId: DataTypes.INTEGER,
       status: {
         type: DataTypes.ENUM,
-        values: ['unlocked', 'locked', 'deleted'],
+        values: [PostItem.UNLOCKED, PostItem.LOCKED, PostItem.DELETED],
       },
     },
     {

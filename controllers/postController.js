@@ -1,12 +1,8 @@
-//importing modules
-const bcrypt = require('bcrypt');
 const db = require('../models');
 let sequalize = db.sequelize;
-const jwt = require('jsonwebtoken');
 const AppError = require('../utils/appError');
 let AWS = require('aws-sdk');
 const { randomUUID } = require('crypto');
-const Utils = require('../utils/utilFunctions');
 const { getFileExtension } = require('../utils/utilFunctions');
 
 AWS.config.update({
@@ -15,20 +11,76 @@ AWS.config.update({
   region: process.env.AWS_REGION,
 });
 // Assigning users to the variable User
-const User = db.User;
 const Post = db.Post;
 const PostItem = db.PostItem;
 
-// This function will return all pots on main page, it should have user_id as params, and it should return locked + unlocked photos
-// If user has unlocked a photo it should not be blurred
-const getAllPosts = () => {};
-const getPost = () => {};
+const unlockPostItem = async (req, res, next) => {
+  try {
+    const { postItemId } = req.body;
+
+    const postItem = await PostItem.findOne({
+      where: { id: postItemId },
+    });
+
+    if (postItem) {
+      const post = await Post.findOne({
+        where: { id: postItem.postId, userId: req.user.id, status: Post.DRAFT },
+      });
+      if (post) {
+        postItem.status = PostItem.UNLOCKED;
+        postItem.save();
+        res.status(200).send({
+          status: 'success',
+          postItem: postItem,
+        });
+      } else {
+        return next(new AppError('Post does not belong to the user', 400));
+      }
+    } else {
+      return next(new AppError('Post item does not exist', 400));
+    }
+  } catch (error) {
+    console.log(error);
+    return next(new AppError('Error while unlocking item', 400));
+  }
+};
+const lockPostItem = async (req, res, next) => {
+  try {
+    const { postItemId } = req.body;
+
+    if (!postItemId) {
+      return next(new AppError('Post does not belong to the user', 400));
+    }
+    const postItem = await PostItem.findOne({
+      where: { id: postItemId },
+    });
+
+    if (postItem) {
+      const post = await Post.findOne({
+        where: { id: postItem.postId, userId: req.user.id },
+      });
+      if (post) {
+        postItem.status = PostItem.LOCKED;
+        postItem.save();
+        res.status(200).send({
+          status: 'success',
+          postItem: postItem,
+        });
+      } else {
+        return next(new AppError('Post does not belong to the user', 400));
+      }
+    } else {
+      return next(new AppError('Post item does not exist', 400));
+    }
+  } catch (error) {
+    console.log(error);
+    return next(new AppError('Error locking item', 400));
+  }
+};
 const deletePost = async (req, res, next) => {
   try {
-    console.log('Request params are: ' + req.params);
     const { postId } = req.params;
 
-    //find a user by their email
     const post = await Post.findOne({
       where: { id: postId, userId: req.user.id },
     });
@@ -130,9 +182,7 @@ const createNewPost = async (req, res, next) => {
 };
 
 const fetchUserPosts = async (req, res, next) => {
-  console.log('USAO U FETCH USER POSTS');
   try {
-    console.log(req.params);
     const { userId } = req.params;
     if (userId == req.user.id) {
       // Fethicng own posts
@@ -148,7 +198,6 @@ const fetchUserPosts = async (req, res, next) => {
       include: { model: PostItem, as: 'PostItems' },
       order: [['id', 'DESC']],
     });
-    console.log(posts.length);
     res.status(200).send({
       status: 'success',
       posts: posts,
@@ -163,4 +212,6 @@ module.exports = {
   createNewPost,
   fetchUserPosts,
   deletePost,
+  lockPostItem,
+  unlockPostItem,
 };

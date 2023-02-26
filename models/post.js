@@ -10,12 +10,15 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Post.hasMany(models.PostItem, { as: 'PostItems', foreignKey: 'postId' });
     }
+    static DELETED = 'deleted';
+    static PUBLISHED = 'published';
+    static DRAFT = 'draft';
   }
   Post.init(
     {
       status: {
         type: DataTypes.ENUM,
-        values: ['draft', 'published', 'deleted'],
+        values: [Post.DRAFT, Post.PUBLISHED, Post.DELETED],
       },
       userId: DataTypes.INTEGER,
     },
