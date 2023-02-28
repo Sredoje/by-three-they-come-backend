@@ -1,5 +1,6 @@
 const db = require('../models');
-let sequalize = db.sequelize;
+let sequelize = db.sequelize;
+const { QueryTypes } = require('sequelize');
 const AppError = require('../utils/appError');
 let AWS = require('aws-sdk');
 const { randomUUID } = require('crypto');
@@ -101,9 +102,9 @@ const deletePost = async (req, res, next) => {
 
 const savePostItems = async (userId, uploadedData) => {
   try {
-    const result = await sequalize.transaction(async (t) => {
+    const result = await sequelize.transaction(async (t) => {
       let post = await Post.build(
-        { userId: userId, status: 'draft' },
+        { userId: userId, status: Post.DRAFT },
         { transaction: t }
       );
       await post.save({ transaction: t }); // save the post instance to get its id
@@ -115,7 +116,7 @@ const savePostItems = async (userId, uploadedData) => {
           mimeType: item.mimeType,
           key: item.key,
           location: item.Location,
-          status: 'unlocked',
+          status: PostItem.UNLOCKED,
         };
         const postItem = await PostItem.build(builtItem, { transaction: t });
         return postItem.save({ transaction: t }); // save the post item instance
@@ -208,10 +209,53 @@ const fetchUserPosts = async (req, res, next) => {
   }
 };
 
+const publishPost = async (req, res, next) => {
+  try {
+    const { postId } = req.body;
+
+    if (!postId) {
+      return next(new AppError('Invalid params sent', 400));
+    }
+
+    let result = await sequelize.query(
+      'SELECT p.id,p.status FROM "Posts" p JOIN "PostItems" pi on pi."postId" = :postId and pi.status = :locked WHERE p.id = :postId and p.status = :status',
+      {
+        replacements: {
+          postId: postId,
+          locked: PostItem.LOCKED,
+          status: Post.DRAFT,
+        },
+        type: QueryTypes.SELECT,
+        model: Post,
+      }
+    );
+
+    if (result[0]) {
+      let updatedPost = await Post.findOne({
+        where: { id: postId },
+        include: { model: PostItem, as: 'PostItems' },
+      });
+      updatedPost.status = Post.PUBLISHED;
+      updatedPost.save();
+
+      res.status(200).send({
+        status: 'success',
+        post: updatedPost,
+      });
+    } else {
+      return next(new AppError('Post does not exist', 400));
+    }
+  } catch (error) {
+    console.log(error);
+    return next(new AppError('Error locking item', 400));
+  }
+};
+
 module.exports = {
   createNewPost,
   fetchUserPosts,
   deletePost,
   lockPostItem,
   unlockPostItem,
+  publishPost,
 };
