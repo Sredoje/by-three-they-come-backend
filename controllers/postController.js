@@ -182,6 +182,41 @@ const createNewPost = async (req, res, next) => {
   }
 };
 
+const fetchIndexPosts = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    let posts = [];
+    if (req.user) {
+      // User is logged in, fetch posts with unlocked items
+      posts = await Post.findAll({
+        where: {
+          status: Post.PUBLISHED,
+        },
+        include: { model: PostItem, as: 'PostItems' },
+        order: [['id', 'DESC']],
+      });
+    } else {
+      // user is not logged in, fetch all posts with blurred items
+      //find a user by their email
+      posts = await Post.findAll({
+        where: {
+          status: Post.PUBLISHED,
+        },
+        include: { model: PostItem, as: 'PostItems' },
+        order: [['id', 'DESC']],
+      });
+    }
+
+    res.status(200).send({
+      status: 'success',
+      posts: posts,
+    });
+  } catch (error) {
+    console.log(error);
+    return next(new AppError('Error fetching posts', 400));
+  }
+};
+
 const fetchUserPosts = async (req, res, next) => {
   try {
     const { userId } = req.params;
@@ -258,4 +293,5 @@ module.exports = {
   lockPostItem,
   unlockPostItem,
   publishPost,
+  fetchIndexPosts,
 };

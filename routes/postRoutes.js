@@ -8,6 +8,7 @@ const {
   lockPostItem,
   unlockPostItem,
   publishPost,
+  fetchIndexPosts,
 } = postController;
 const protect = require('../middlewares/protect');
 
@@ -23,6 +24,7 @@ var multipleUpload = multer({ storage: storage }).any();
 
 router.route('/:postId').delete(protect, deletePost);
 router.post('/', multipleUpload, protect, createNewPost);
+router.get('/', fetchIndexPosts);
 router.post('/publish', protect, publishPost);
 router.get('/user-posts/:userId', protect, fetchUserPosts);
 router.route('/lock-post-item').post(protect, lockPostItem);
