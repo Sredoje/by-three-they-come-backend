@@ -15,69 +15,6 @@ AWS.config.update({
 const Post = db.Post;
 const PostItem = db.PostItem;
 
-const unlockPostItem = async (req, res, next) => {
-  try {
-    const { postItemId } = req.body;
-
-    const postItem = await PostItem.findOne({
-      where: { id: postItemId },
-    });
-
-    if (postItem) {
-      const post = await Post.findOne({
-        where: { id: postItem.postId, userId: req.user.id, status: Post.DRAFT },
-      });
-      if (post) {
-        postItem.status = PostItem.UNLOCKED;
-        postItem.save();
-        res.status(200).send({
-          status: 'success',
-          postItem: postItem,
-        });
-      } else {
-        return next(new AppError('Post does not belong to the user', 400));
-      }
-    } else {
-      return next(new AppError('Post item does not exist', 400));
-    }
-  } catch (error) {
-    console.log(error);
-    return next(new AppError('Error while unlocking item', 400));
-  }
-};
-const lockPostItem = async (req, res, next) => {
-  try {
-    const { postItemId } = req.body;
-
-    if (!postItemId) {
-      return next(new AppError('Post does not belong to the user', 400));
-    }
-    const postItem = await PostItem.findOne({
-      where: { id: postItemId },
-    });
-
-    if (postItem) {
-      const post = await Post.findOne({
-        where: { id: postItem.postId, userId: req.user.id },
-      });
-      if (post) {
-        postItem.status = PostItem.LOCKED;
-        postItem.save();
-        res.status(200).send({
-          status: 'success',
-          postItem: postItem,
-        });
-      } else {
-        return next(new AppError('Post does not belong to the user', 400));
-      }
-    } else {
-      return next(new AppError('Post item does not exist', 400));
-    }
-  } catch (error) {
-    console.log(error);
-    return next(new AppError('Error locking item', 400));
-  }
-};
 const deletePost = async (req, res, next) => {
   try {
     const { postId } = req.params;
@@ -100,42 +37,6 @@ const deletePost = async (req, res, next) => {
   }
 };
 
-const savePostItems = async (userId, uploadedData) => {
-  try {
-    const result = await sequelize.transaction(async (t) => {
-      let post = await Post.build(
-        { userId: userId, status: Post.DRAFT },
-        { transaction: t }
-      );
-      await post.save({ transaction: t }); // save the post instance to get its id
-
-      const postItems = uploadedData.map(async (item) => {
-        let builtItem = {
-          postId: post.id,
-          originalName: item.originalName,
-          mimeType: item.mimeType,
-          key: item.key,
-          location: item.Location,
-          status: PostItem.UNLOCKED,
-        };
-        const postItem = await PostItem.build(builtItem, { transaction: t });
-        return postItem.save({ transaction: t }); // save the post item instance
-      });
-
-      await Promise.all(postItems); // wait for all post item instances to be saved
-
-      return post;
-    });
-
-    // If the execution reaches this line, the transaction has been committed successfully
-    // `result` is whatever was returned from the transaction callback (the `user`, in this case)
-    return result;
-  } catch (error) {
-    console.log(error);
-    // If the execution reaches this line, an error occurred.
-    // The transaction has already been rolled back automatically by Sequelize!
-  }
-};
 const createNewPost = async (req, res, next) => {
   try {
     if (!req.files) {
@@ -286,12 +187,47 @@ const publishPost = async (req, res, next) => {
   }
 };
 
+const savePostItems = async (userId, uploadedData) => {
+  try {
+    const result = await sequelize.transaction(async (t) => {
+      let post = await Post.build(
+        { userId: userId, status: Post.DRAFT },
+        { transaction: t }
+      );
+      await post.save({ transaction: t }); // save the post instance to get its id
+
+      const postItems = uploadedData.map(async (item) => {
+        let builtItem = {
+          postId: post.id,
+          originalName: item.originalName,
+          mimeType: item.mimeType,
+          key: item.key,
+          location: item.Location,
+          status: PostItem.UNLOCKED,
+        };
+        const postItem = await PostItem.build(builtItem, { transaction: t });
+        return postItem.save({ transaction: t }); // save the post item instance
+      });
+
+      await Promise.all(postItems); // wait for all post item instances to be saved
+
+      return post;
+    });
+
+    // If the execution reaches this line, the transaction has been committed successfully
+    // `result` is whatever was returned from the transaction callback (the `user`, in this case)
+    return result;
+  } catch (error) {
+    console.log(error);
+    // If the execution reaches this line, an error occurred.
+    // The transaction has already been rolled back automatically by Sequelize!
+  }
+};
+
 module.exports = {
   createNewPost,
   fetchUserPosts,
   deletePost,
-  lockPostItem,
-  unlockPostItem,
   publishPost,
   fetchIndexPosts,
 };

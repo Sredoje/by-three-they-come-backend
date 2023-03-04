@@ -5,8 +5,6 @@ const {
   createNewPost,
   fetchUserPosts,
   deletePost,
-  lockPostItem,
-  unlockPostItem,
   publishPost,
   fetchIndexPosts,
 } = postController;
@@ -27,7 +25,5 @@ router.post('/', multipleUpload, protect, createNewPost);
 router.get('/', fetchIndexPosts);
 router.post('/publish', protect, publishPost);
 router.get('/user-posts/:userId', protect, fetchUserPosts);
-router.route('/lock-post-item').post(protect, lockPostItem);
-router.route('/unlock-post-item').post(protect, unlockPostItem);
 
 module.exports = router;
