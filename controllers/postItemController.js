@@ -12,11 +12,15 @@ const buyPostItem = async (req, res, next) => {
     const { postItemId } = req.body;
 
     let postItem = await PostItem.findOne({
-      where: { postItemId: postItemId, status: PostItem.LOCKED },
+      where: { id: postItemId },
     });
 
     if (!postItem) {
       return next(new AppError('Post item does not exist', 400));
+    }
+
+    if (postItem.status !== PostItem.LOCKED) {
+      return next(new AppError('This item is not locked', 400));
     }
 
     let userItem = await UserItem.findOne({
@@ -28,7 +32,7 @@ const buyPostItem = async (req, res, next) => {
     }
 
     let user = await User.findOne({
-      where: { userId: req.user.id },
+      where: { id: req.user.id },
     });
 
     if (user.points < UserItem.ITEM_COST) {
@@ -53,7 +57,7 @@ const buyPostItem = async (req, res, next) => {
 
     res.status(200).send({
       status: 'success',
-      postItem: result,
+      userItem: result,
     });
   } catch (error) {
     console.log(error);

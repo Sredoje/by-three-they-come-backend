@@ -9,6 +9,7 @@ const {
   fetchIndexPosts,
 } = postController;
 const protect = require('../middlewares/protect');
+const protectIfExist = require('../middlewares/protectIfExist');
 
 const router = express.Router();
 var multer = require('multer');
@@ -22,7 +23,7 @@ var multipleUpload = multer({ storage: storage }).any();
 
 router.route('/:postId').delete(protect, deletePost);
 router.post('/', multipleUpload, protect, createNewPost);
-router.get('/', fetchIndexPosts);
+router.get('/', protectIfExist, fetchIndexPosts);
 router.post('/publish', protect, publishPost);
 router.get('/user-posts/:userId', protect, fetchUserPosts);
 

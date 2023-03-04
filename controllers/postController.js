@@ -85,29 +85,65 @@ const createNewPost = async (req, res, next) => {
 
 const fetchIndexPosts = async (req, res, next) => {
   try {
-    const { userId } = req.params;
     let posts = [];
+    let result = null;
     if (req.user) {
-      // User is logged in, fetch posts with unlocked items
-      posts = await Post.findAll({
-        where: {
-          status: Post.PUBLISHED,
-        },
-        include: { model: PostItem, as: 'PostItems' },
-        order: [['id', 'DESC']],
-      });
+      console.log('POSTOJI USER');
+      result = await sequelize.query(
+        `
+        SELECT p.id as "postId",pi.key, "key", pi.status as "status",pi.id as "id", case when ui.id is null then false else true end as owns_item
+        FROM "Posts" p 
+        JOIN "PostItems" pi on pi."postId" = p.id
+        LEFT JOIN "UserItems" ui ON pi."id" = ui."postItemId" and ui."userId" = :userId
+        WHERE p.status = :postStatus`,
+        {
+          replacements: {
+            userId: req.user.id,
+            postStatus: Post.PUBLISHED,
+          },
+          type: QueryTypes.SELECT,
+        }
+      );
     } else {
-      // user is not logged in, fetch all posts with blurred items
-      //find a user by their email
-      posts = await Post.findAll({
-        where: {
-          status: Post.PUBLISHED,
-        },
-        include: { model: PostItem, as: 'PostItems' },
-        order: [['id', 'DESC']],
-      });
+      result = await sequelize.query(
+        `
+        SELECT p.id as "postId",pi.key, "key", pi.status as "status",pi.id as "id", false as owns_item
+        FROM "Posts" p 
+        JOIN "PostItems" pi on pi."postId" = p.id
+        WHERE p.status = :postStatus`,
+        {
+          replacements: {
+            postStatus: Post.PUBLISHED,
+          },
+          type: QueryTypes.SELECT,
+        }
+      );
     }
+    posts = result.reduce((acc, item) => {
+      const post = acc.find((post) => post.id == item.postId);
+      if (!post) {
+        acc.push({
+          id: item.postId,
+          postItems: [
+            {
+              id: item.id,
+              key: item.key,
+              status: item.status,
+              ownsItem: item.owns_item,
+            },
+          ],
+        });
+      } else {
+        post.postItems.push({
+          id: item.id,
+          key: item.key,
+          status: item.status,
+          ownsItem: item.owns_item,
+        });
+      }
 
+      return acc;
+    }, []);
     res.status(200).send({
       status: 'success',
       posts: posts,
