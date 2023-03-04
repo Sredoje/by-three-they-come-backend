@@ -54,10 +54,15 @@ const buyPostItem = async (req, res, next) => {
 
       return userItem;
     });
+    let responseData = {
+      points: user.points,
+      postItemId: postItem.id,
+      postId: postItem.postId,
+    };
 
     res.status(200).send({
       status: 'success',
-      userItem: result,
+      userItem: responseData,
     });
   } catch (error) {
     console.log(error);

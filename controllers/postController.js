@@ -50,7 +50,7 @@ const createNewPost = async (req, res, next) => {
     let s3 = new AWS.S3();
 
     let uploadedData = [];
-    files.map((file) => {
+    files.map((file, index) => {
       const fileContent = Buffer.from(file.buffer, 'binary');
       const fileExtension = getFileExtension(file.mimetype);
       const key = randomUUID() + '.' + fileExtension;
@@ -67,8 +67,8 @@ const createNewPost = async (req, res, next) => {
         data['originalName'] = file.originalname;
         data['mimeType'] = file.mimetype;
         data['Key'] = key;
-        uploadedData.push(data);
-        if (uploadedData.length == files.length) {
+        uploadedData[index] = data;
+        if (Object.keys(uploadedData).length == files.length) {
           await savePostItems(req.user.id, uploadedData);
           res.send({
             response_code: 200,
@@ -88,20 +88,21 @@ const fetchIndexPosts = async (req, res, next) => {
     let posts = [];
     let result = null;
     if (req.user) {
-      console.log('POSTOJI USER');
       result = await sequelize.query(
         `
         SELECT p.id as "postId",pi.key, "key", pi.status as "status",pi.id as "id", case when ui.id is null then false else true end as owns_item
         FROM "Posts" p 
         JOIN "PostItems" pi on pi."postId" = p.id
         LEFT JOIN "UserItems" ui ON pi."id" = ui."postItemId" and ui."userId" = :userId
-        WHERE p.status = :postStatus`,
+        WHERE p.status = :postStatus
+        ORDER BY p.id desc, pi.id`,
         {
           replacements: {
             userId: req.user.id,
             postStatus: Post.PUBLISHED,
           },
           type: QueryTypes.SELECT,
+          order: [['pi.id', 'DESC']],
         }
       );
     } else {
@@ -110,12 +111,14 @@ const fetchIndexPosts = async (req, res, next) => {
         SELECT p.id as "postId",pi.key, "key", pi.status as "status",pi.id as "id", false as owns_item
         FROM "Posts" p 
         JOIN "PostItems" pi on pi."postId" = p.id
-        WHERE p.status = :postStatus`,
+        WHERE p.status = :postStatus
+        ORDER BY p.id desc, pi.id`,
         {
           replacements: {
             postStatus: Post.PUBLISHED,
           },
           type: QueryTypes.SELECT,
+          order: [['pi.id', 'DESC']],
         }
       );
     }
@@ -168,9 +171,16 @@ const fetchUserPosts = async (req, res, next) => {
       where: {
         userId: userId,
       },
-      include: { model: PostItem, as: 'PostItems' },
-      order: [['id', 'DESC']],
+      include: {
+        model: PostItem,
+        as: 'PostItems',
+      },
+      order: [
+        ['id', 'DESC'],
+        ['PostItems', 'id', 'ASC'],
+      ],
     });
+
     res.status(200).send({
       status: 'success',
       posts: posts,
@@ -206,6 +216,10 @@ const publishPost = async (req, res, next) => {
       let updatedPost = await Post.findOne({
         where: { id: postId },
         include: { model: PostItem, as: 'PostItems' },
+        order: [
+          ['id', 'DESC'],
+          ['PostItems', 'id', 'ASC'],
+        ],
       });
       updatedPost.status = Post.PUBLISHED;
       updatedPost.save();
