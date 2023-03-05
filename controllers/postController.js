@@ -87,6 +87,8 @@ const fetchIndexPosts = async (req, res, next) => {
   try {
     let posts = [];
     let result = null;
+    let offset = req.body.offset * 3;
+
     if (req.user) {
       result = await sequelize.query(
         `
@@ -95,11 +97,13 @@ const fetchIndexPosts = async (req, res, next) => {
         JOIN "PostItems" pi on pi."postId" = p.id
         LEFT JOIN "UserItems" ui ON pi."id" = ui."postItemId" and ui."userId" = :userId
         WHERE p.status = :postStatus
-        ORDER BY p.id desc, pi.id`,
+        ORDER BY p.id desc, pi.id
+        LIMIT 9 OFFSET :offset`,
         {
           replacements: {
             userId: req.user.id,
             postStatus: Post.PUBLISHED,
+            offset: offset,
           },
           type: QueryTypes.SELECT,
           order: [['pi.id', 'DESC']],
@@ -112,10 +116,12 @@ const fetchIndexPosts = async (req, res, next) => {
         FROM "Posts" p 
         JOIN "PostItems" pi on pi."postId" = p.id
         WHERE p.status = :postStatus
-        ORDER BY p.id desc, pi.id`,
+        ORDER BY p.id desc, pi.id
+        LIMIT 9 OFFSET :offset`,
         {
           replacements: {
             postStatus: Post.PUBLISHED,
+            offset: offset,
           },
           type: QueryTypes.SELECT,
           order: [['pi.id', 'DESC']],

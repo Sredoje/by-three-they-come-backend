@@ -23,7 +23,7 @@ var multipleUpload = multer({ storage: storage }).any();
 
 router.route('/:postId').delete(protect, deletePost);
 router.post('/', multipleUpload, protect, createNewPost);
-router.get('/', protectIfExist, fetchIndexPosts);
+router.post('/index', protectIfExist, fetchIndexPosts);
 router.post('/publish', protect, publishPost);
 router.get('/user-posts/:userId', protect, fetchUserPosts);
 
