@@ -26,7 +26,6 @@ module.exports = async (req, res, next) => {
     return next(new AppError('Cannot decode token', 401));
   }
 
-  console.log(decode.id);
   // 3- check user exits
   //find a user by their email
   const currentUser = await User.findOne({
