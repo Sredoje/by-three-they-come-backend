@@ -7,6 +7,7 @@ const {
   deletePost,
   publishPost,
   fetchIndexPosts,
+  fetchPurchasedPosts,
 } = postController;
 const protect = require('../middlewares/protect');
 const protectIfExist = require('../middlewares/protectIfExist');
@@ -35,5 +36,6 @@ router.post(
 router.post('/index', protectIfExist, fetchIndexPosts);
 router.post('/publish', protect, publishPost);
 router.get('/user-posts/:userId', protect, fetchUserPosts);
+router.get('/purchased/:userId', protect, fetchPurchasedPosts);
 
 module.exports = router;

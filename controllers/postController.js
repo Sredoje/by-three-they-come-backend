@@ -128,31 +128,7 @@ const fetchIndexPosts = async (req, res, next) => {
         }
       );
     }
-    posts = result.reduce((acc, item) => {
-      const post = acc.find((post) => post.id == item.postId);
-      if (!post) {
-        acc.push({
-          id: item.postId,
-          postItems: [
-            {
-              id: item.id,
-              key: item.key,
-              status: item.status,
-              ownsItem: item.owns_item,
-            },
-          ],
-        });
-      } else {
-        post.postItems.push({
-          id: item.id,
-          key: item.key,
-          status: item.status,
-          ownsItem: item.owns_item,
-        });
-      }
-
-      return acc;
-    }, []);
+    posts = nestPostItem(result);
     res.status(200).send({
       status: 'success',
       posts: posts,
@@ -163,14 +139,44 @@ const fetchIndexPosts = async (req, res, next) => {
   }
 };
 
+const fetchPurchasedPosts = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    let posts = [];
+    let result = null;
+    let offset = req.body.offset * 3;
+
+    result = await sequelize.query(
+      `
+        SELECT p.id as "postId",pi.key, "key", pi.status as "status",pi.id as "id"
+        FROM "Posts" p 
+        JOIN "PostItems" pi on pi."postId" = p.id
+        JOIN "UserItems" ui ON ui."userId" = :userId AND ui."postId" = p.id
+        ORDER BY p.id desc, pi.id`,
+      {
+        replacements: {
+          userId: req.user.id,
+        },
+        type: QueryTypes.SELECT,
+        order: [['pi.id', 'DESC']],
+      }
+    );
+    posts = nestPostItem(result);
+
+    res.status(200).send({
+      status: 'success',
+      posts: posts,
+    });
+  } catch (error) {
+    console.log(error);
+    return next(new AppError('Error fetching user posts', 400));
+  }
+};
+
 const fetchUserPosts = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    if (userId == req.user.id) {
-      // Fethicng own posts
-    } else {
-      // Fethicng someone elses posts, add locked ones
-    }
 
     //find a user by their email
     const posts = await Post.findAll({
@@ -279,11 +285,39 @@ const savePostItems = async (userId, uploadedData) => {
     // The transaction has already been rolled back automatically by Sequelize!
   }
 };
+// This function is used to pull post item from object and nest it into a post
+function nestPostItem(result) {
+  return result.reduce((acc, item) => {
+    const post = acc.find((post) => post.id == item.postId);
+    if (!post) {
+      acc.push({
+        id: item.postId,
+        PostItems: [
+          {
+            id: item.id,
+            key: item.key,
+            status: item.status,
+            ownsItem: item.owns_item,
+          },
+        ],
+      });
+    } else {
+      post.PostItems.push({
+        id: item.id,
+        key: item.key,
+        status: item.status,
+        ownsItem: item.owns_item,
+      });
+    }
 
+    return acc;
+  }, []);
+}
 module.exports = {
   createNewPost,
   fetchUserPosts,
   deletePost,
   publishPost,
   fetchIndexPosts,
+  fetchPurchasedPosts,
 };

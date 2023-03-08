@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
     static ROLE_ADMIN = 'admin';
     static ROLE_MANAGER = 'manager';
     static ROLE_NORMAL = 'normal';
+    static STARTING_POINTS = 2000;
   }
   User.init(
     {

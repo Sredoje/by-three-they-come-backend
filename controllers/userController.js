@@ -9,13 +9,14 @@ const User = db.User;
 
 const signup = async (req, res, next) => {
   try {
-    const { userName, email, password } = req.body;
+    const { username, email, password } = req.body;
     const data = {
-      userName,
+      username,
       email,
       password: await bcrypt.hash(password, 10),
+      points: User.STARTING_POINTS,
+      role: User.ROLE_NORMAL,
     };
-    //saving the user
     const user = await User.create(data);
 
     //if user details is captured
