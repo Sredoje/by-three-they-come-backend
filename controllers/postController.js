@@ -5,6 +5,7 @@ const AppError = require('../utils/appError');
 let AWS = require('aws-sdk');
 const { randomUUID } = require('crypto');
 const { getFileExtension } = require('../utils/utilFunctions');
+const process = require('process');
 
 AWS.config.update({
   accessKeyId: process.env.AWS_S3_ACCESS_KEY,
