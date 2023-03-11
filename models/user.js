@@ -9,11 +9,16 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       User.hasMany(models.UserItem, { as: 'UserItem', foreignKey: 'userId' });
+      User.hasMany(models.Transaction, {
+        as: 'Transaction',
+        foreignKey: 'userId',
+      });
     }
     static ROLE_ADMIN = 'admin';
     static ROLE_MANAGER = 'manager';
     static ROLE_NORMAL = 'normal';
     static STARTING_POINTS = 2000;
+    static BOUGHT_POINTS = 2000;
   }
   User.init(
     {

@@ -13,8 +13,7 @@ const sendFeedback = async (req, res, next) => {
         pass: process.env.EMAIL_PASSWORD,
       },
     });
-    console.log(process.env.EMAIL_SENDER);
-    console.log(process.env.EMAIL_PASSWORD);
+
     var mailOptions = {
       from: process.env.EMAIL_SENDER,
       to: email,

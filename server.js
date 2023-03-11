@@ -9,6 +9,7 @@ const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
 const emailRoutes = require('./routes/emailRoutes');
 const postItemRoutes = require('./routes/postItemRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 const globalErrorHandler = require('./middlewares/globalErrorHandler');
 // const fileupload = require('express-fileupload');
 
@@ -35,6 +36,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/postItems', postItemRoutes);
 app.use('/api/emails', emailRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.use(globalErrorHandler);
 
