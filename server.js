@@ -7,6 +7,7 @@ const cors = require('cors');
 const db = require('./models');
 const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
+const emailRoutes = require('./routes/emailRoutes');
 const postItemRoutes = require('./routes/postItemRoutes');
 const globalErrorHandler = require('./middlewares/globalErrorHandler');
 // const fileupload = require('express-fileupload');
@@ -33,6 +34,7 @@ db.sequelize.sync().then(() => {
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/postItems', postItemRoutes);
+app.use('/api/emails', emailRoutes);
 
 app.use(globalErrorHandler);
 
